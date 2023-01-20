@@ -1,9 +1,15 @@
 package com.baeldung.resource.spring;
 
+import com.baeldung.resource.spring.claim.CustomClaimVerifier;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -25,4 +31,16 @@ public class SecurityConfig {
             .jwt();
         return http.build();
     }
+
+    @Bean
+    public JwtDecoder jwtDecoder(OAuth2ResourceServerProperties properties) {
+        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(
+                properties.getJwt().getJwkSetUri()).build();
+
+        OAuth2TokenValidator<Jwt> customValidator = new CustomClaimVerifier();
+        jwtDecoder.setJwtValidator(customValidator);
+        return jwtDecoder;
+    }
+
+
 }
